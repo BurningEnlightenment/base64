@@ -46,10 +46,7 @@ endif()
 ###################################################################
 # OpenMP
 if(BASE64_WITH_OPENMP)
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        option(BASE64_USE_OpenMP "Utilize OpenMP to parallelize encoding and decoding." ON)
-    endif()
+    find_package(OpenMP REQUIRED)
 endif()
 
 ########################################################################
