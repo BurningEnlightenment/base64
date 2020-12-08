@@ -110,9 +110,15 @@ set_target_properties(base64 PROPERTIES
     C_STANDARD 99
     C_STANDARD_REQUIRED YES
     C_EXTENSIONS OFF
+    DEFINE_SYMBOL BASE64_EXPORTS
     SOVERSION "${PROJECT_VERSION_MAJOR}"
     VERSION "${PROJECT_VERSION}"
 )
+if(BUILD_SHARED_LIBS)
+    set_target_properties(base64 PROPERTIES
+        C_VISIBILITY_PRESET hidden
+    )
+endif()
 
 target_compile_options(base64 PRIVATE
   $<$<C_COMPILER_ID:MSVC>:
@@ -131,11 +137,15 @@ target_compile_options(base64 PRIVATE
     $<$<BOOL:${BASE64_WERROR}>:-Werror>
   >
 )
-target_compile_definitions(base64 PRIVATE
-  $<$<C_COMPILER_ID:MSVC>:
-    # remove unnecessary warnings about unchecked iterators
-    _SCL_SECURE_NO_WARNINGS
-  >
+target_compile_definitions(base64
+    PRIVATE
+        $<$<C_COMPILER_ID:MSVC>:
+        # remove unnecessary warnings about unchecked iterators
+        _SCL_SECURE_NO_WARNINGS
+        >
+    INTERFACE
+        # Define BASE64_STATIC for dependencies when building base64 as a static library
+        $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:BASE64_STATIC>
 )
 
 ########################################################################
