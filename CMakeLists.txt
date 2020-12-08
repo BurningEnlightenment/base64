@@ -22,6 +22,11 @@ include(TargetArch)
 detect_target_architecture(_TARGET_ARCH)
 
 
+#######################################################################
+# include modules
+include(GNUInstallDirs)
+
+
 ########################################################################
 # Compilation options
 option(BASE64_INSTALL_TARGET "add an install target" ON)
@@ -41,12 +46,6 @@ elseif (_TARGET_ARCH STREQUAL "arm")
 elseif (_TARGET_ARCH STREQUAL "arm64")
     option(BASE64_WITH_NEON64 "add NEON64 codepath" ON)
 
-endif()
-
-###################################################################
-# OpenMP
-if(BASE64_WITH_OPENMP)
-    find_package(OpenMP REQUIRED)
 endif()
 
 ########################################################################
@@ -96,12 +95,13 @@ add_library(base64
     lib/arch/neon64/codec.c
 )
 
-if (NOT BASE64_STANDALONE_PROJECT)
-    # export inlucde path if base64 added as subdirectory
-    target_include_directories(base64 INTERFACE
+target_include_directories(base64
+    INTERFACE
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    )
-endif()
+    PRIVATE
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 ####################################################################
 # platform/compiler specific configuration
@@ -180,11 +180,11 @@ elseif (_TARGET_ARCH STREQUAL "arm")
 endif()
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-target_include_directories(base64 PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 ########################################################################
-# OpenMP Settings
-if (BASE64_USE_OpenMP)
+# OpenMP
+if(BASE64_WITH_OPENMP)
+    find_package(OpenMP REQUIRED)
     target_compile_options(base64
         PRIVATE
             ${OpenMP_C_FLAGS}
@@ -201,12 +201,12 @@ endif()
 # install target
 if (BASE64_INSTALL_TARGET)
     install(TARGETS base64 EXPORT base64-targets
-        RUNTIME DESTINATION bin/$<CONFIG>
-        LIBRARY DESTINATION lib/$<CONFIG>
-        ARCHIVE DESTINATION lib/$<CONFIG>
-        INCLUDES DESTINATION include
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
-    install(FILES include/libbase64.h DESTINATION include)
+    install(FILES include/libbase64.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(
