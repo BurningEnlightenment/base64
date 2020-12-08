@@ -32,6 +32,7 @@ include(GNUInstallDirs)
 option(BASE64_INSTALL_TARGET "add an install target" ON)
 option(BASE64_BUILD_TESTS "add test projects" ON)
 option(BASE64_WITH_OPENMP "use openmp" OFF)
+option(BASE64_WERROR "fail on compiler error" ON)
 
 if (_TARGET_ARCH STREQUAL "x86" OR _TARGET_ARCH STREQUAL "x64")
     option(BASE64_WITH_SSSE3 "add SSSE 3 codepath" ON)
@@ -116,7 +117,7 @@ set_target_properties(base64 PROPERTIES
 target_compile_options(base64 PRIVATE
   $<$<C_COMPILER_ID:MSVC>:
     /W4
-    /WX # All warnings as error
+    $<$<BOOL:${BASE64_WERROR}>:/WX> # All warnings as error
     /we4013 # Error warning C4013: 'function' undefined; assuming extern returning int
     /we4700 # Error warning C4700: uninitialized local variable
     /we4715 # not all control paths return a value
@@ -127,9 +128,9 @@ target_compile_options(base64 PRIVATE
     -Wall
     -Wextra
     -Wpedantic
+    $<$<BOOL:${BASE64_WERROR}>:-Werror>
   >
 )
-
 target_compile_definitions(base64 PRIVATE
   $<$<C_COMPILER_ID:MSVC>:
     # remove unnecessary warnings about unchecked iterators
