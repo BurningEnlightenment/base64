@@ -73,7 +73,7 @@ endif()
 
 ########################################################################
 # library project
-add_library(base64 STATIC
+add_library(base64
     # library files
     lib/lib.c
     lib/codec_choose.c
@@ -109,6 +109,8 @@ set_target_properties(base64 PROPERTIES
     C_STANDARD 99
     C_STANDARD_REQUIRED YES
     C_EXTENSIONS OFF
+    SOVERSION "${PROJECT_VERSION_MAJOR}"
+    VERSION "${PROJECT_VERSION}"
 )
 
 target_compile_options(base64 PRIVATE
